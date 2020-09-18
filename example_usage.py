@@ -20,6 +20,7 @@ dt_pin = 5
 sw_pin = 16
 press_sw_pin = 26
 counter = 128
+clkLastState = 0
 
 red_pin = 22
 green_pin = 17
@@ -108,6 +109,15 @@ if __name__ == '__main__':
     GPIO.setup(red_pin, GPIO.OUT)
     GPIO.setup(green_pin, GPIO.OUT)  
     GPIO.setup(yellow_pin, GPIO.OUT)  
+    
+    GPIO.add_event_detect(clk_pin, GPIO.FALLING  , callback=rotary_callback , bouncetime=5)
+    GPIO.add_event_detect(sw_pin, GPIO.FALLING , callback=sw_callback, bouncetime=300)
+    GPIO.add_event_detect(press_sw_pin, GPIO.FALLING , callback=press_sw_callback, bouncetime=1000)
+
+    buz=buzzer.Buzzer()
+
+
+
 
     # LED strip configuration:
     LED_COUNT      = 1      # Number of LED pixels.
@@ -118,12 +128,6 @@ if __name__ == '__main__':
     LED_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
     LED_CHANNEL    = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 
-    buz=buzzer.Buzzer()
-    clkLastState = GPIO.input(clk_pin)
-
-    GPIO.add_event_detect(clk_pin, GPIO.FALLING  , callback=rotary_callback , bouncetime=5) 
-    GPIO.add_event_detect(sw_pin, GPIO.FALLING , callback=sw_callback, bouncetime=300)  
-    GPIO.add_event_detect(press_sw_pin, GPIO.FALLING , callback=press_sw_callback, bouncetime=1000)
     # Create NeoPixel object with appropriate configuration.
     strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
     # Intialize the library (must be called once before other functions).
@@ -132,8 +136,9 @@ if __name__ == '__main__':
     strip.show()
     os.environ["SDL_VIDEODRIVER"] = "dummy"
     os.environ['SDL_AUDIODRIVER'] = "dsp"
-    os.environ["SDL_FBDEV"] = "/dev/fb1"
+    os.environ["SDL_FBDEV"] = "/dev/fb0"
 
+    #config display size
     size = width, height = 240,240
 
     pygame.init()
@@ -144,6 +149,8 @@ if __name__ == '__main__':
     font = pygame.font.Font("/home/pi/board_examples/fonts/Anakotmai-Medium.ttf", 23)
     clock = pygame.time.Clock()
     start_blink = start = time()
+
+    #initial SMbus for sensor
     bus=smbus.SMBus(1)
 
     hsSensor = hs300x.Hs300x(bus)
