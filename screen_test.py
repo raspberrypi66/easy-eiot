@@ -5,7 +5,6 @@ import sys, pygame
 from pygame.locals import *
 import os
 import random
-import time
 
 #Config for tiny screen
 os.environ["SDL_VIDEODRIVER"] = "dummy"
